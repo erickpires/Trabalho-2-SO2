@@ -7,16 +7,24 @@
 
 #include <sys/stat.h>
 
+#define FALSE 0
+#define TRUE  1
+
+typedef unsigned int uint;
+
 typedef enum {
-	regular,
+	// Iniciando enum com 1 para podermos testar se a variável já foi "setada"
+	regular = 1,
 	directory,
 	link_file,
 	block,
 	character
 } file_type;
 
-file_type types = directory;
-unsigned int count = 0;
+file_type types = 0;
+uint count = 0;
+uint use_all_files = FALSE;
+uint verbose_mode = FALSE;
 
 int walk_dir (const char *path, void (*func) (const char *)) {
 	DIR *dirp;
@@ -39,6 +47,7 @@ int walk_dir (const char *path, void (*func) (const char *)) {
 		/* ignora as entradas “.” e “..” */
 		if (strcmp (dp->d_name, ".") == 0 || strcmp (dp->d_name, "..") == 0)
 			continue;
+
 		strcpy (p, dp->d_name);
 		/* “full_path” armazena o caminho */
 		(*func) (full_path);
@@ -51,6 +60,9 @@ int walk_dir (const char *path, void (*func) (const char *)) {
 void count_files(const char* path) {
 	struct stat buffer = {0};
 	lstat(path, &buffer);
+
+	if(strstr(path, "/.") && !use_all_files) // O arquivo é oculto e não será considerado
+		return;
 
 	switch (types) {
 	case regular:
@@ -71,47 +83,65 @@ void count_files(const char* path) {
 	default:
 		break;
 	}
+
+	if(verbose_mode)
+		printf("%d : %s\n", count, path);
+}
+
+void more_than_one_type_error() {
+	fprintf(stderr, "Specify only one type of file.\n");
+	exit(1);
 }
 
 int main(int argc, char** argv) {
-	walk_dir(".", count_files);
-
 	int opt;
-
-	while((opt = getopt(argc, argv, "rdlbca")) != -1) {
+	char* pathname = NULL;
+	while((opt = getopt(argc, argv, "rdlbcav")) != -1) {
 		switch (opt) {
 		case 'r' :
-			puts("regular");
+			if(!types) types = regular;
+			else more_than_one_type_error();
 			break;
 		case 'd' :
-			puts("dir");
+			if(!types) types = directory;
+			else more_than_one_type_error();
 			break;
 		case 'l' :
-			puts("link");
+			if(!types) types = link_file;
+			else more_than_one_type_error();
 			break;
 		case 'b' :
-			puts("block");
+			if(!types) types = block;
+			else more_than_one_type_error();
 			break;
 		case 'c' :
-			puts("char");
+			if(!types) types = character;
+			else more_than_one_type_error();
 			break;
 		case 'a' :
-			puts("all");
+			use_all_files = TRUE;
+			break;
+		case 'v' :
+			verbose_mode = TRUE;
+			break;
+		default :
 			break;
 		}
 	}
 
-	if (optind < argc)
-{
-    do
-    {
-        char *file = argv[optind];
-        printf("%s\n", file);
-        // do something with file
-    }
-    while ( ++optind < argc);
-}
+	// Se nenhum tipo for informado, usar "regular" como padrão
+	if(!types) types = regular;
 
+	if (optind < argc) {
+        pathname = argv[optind];
+    }
+    else {
+    	fprintf(stderr, "You must specify a path.\n");
+    	exit(2);
+    }
+
+
+	walk_dir(pathname, count_files);
 	printf("%d\n", count);
 
 	return 0;
