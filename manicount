@@ -1,0 +1,53 @@
+.\" Manpage for icount.
+
+.\" Contact "our emails here" to correct errors or typos.
+
+.TH man 1 "10 Nov 2015" "0.1" "icount man page"
+
+.SH NAME
+icount \- count file descriptors
+
+.SH SYNOPSIS
+icount -[rdlbcav] \fBpathname\fB
+
+.SH DESCRIPTION
+icount returns the number of file descriptors, of a certain type, that are open in the pathname.
+
+.SH OPTIONS
+.TP
+.BR \-r
+Set the file type of the search for descriptors open to regular.
+Cannot be used with options d, l, b, c.
+.TP
+.BR \-d
+Set the file type of the search for descriptors open to directory.
+Cannot be used with options r, l, b, c.
+.TP
+.BR \-l
+Set the file type of the search for descriptors open to link.
+Cannot be used with options r, d, b, c.
+.TP
+.BR \-b
+Set the file type of the search for descriptors open to block.
+Cannot be used with options r, d, l, c.
+.TP
+.BR \-c
+Set the file type of the search for descriptors open to character.
+Cannot be used with options r, d, l, b.
+.TP
+.BR \-a
+Set icount to count hidden files.
+Can be used with options r, d, l, b, c, v.
+.TP
+.BR \-v
+Set verbose mode
+Can be used with options r, d, l, b, c, a.
+
+.SH SEE ALSO
+.BR
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Erick Pires (email here)
+Matheus Ambrozio (email here)
