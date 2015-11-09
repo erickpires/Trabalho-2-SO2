@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+#define _GNU_SOURCE  // basename()
 #include <string.h>
+
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -61,7 +64,8 @@ void count_files(const char* path) {
 	struct stat buffer = {0};
 	lstat(path, &buffer);
 
-	if(strstr(path, "/.") && !use_all_files) // O arquivo é oculto e não será considerado
+	char* base = basename(path);
+	if(*base == '.' && !use_all_files) // O arquivo é oculto e não será considerado
 		return;
 
 	switch (types) {
